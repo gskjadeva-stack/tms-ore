@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique @db.VarChar(320)
+  passwordHash  String?   @map("password_hash") @db.VarChar(256)
+  fullName      String?   @map("full_name") @db.VarChar(200)
+  role          String    @default("user") @db.VarChar(20)
+  emailVerified Boolean   @default(false) @map("email_verified")
+  otpCode       String?   @map("otp_code") @db.VarChar(6)
+  otpExpires    DateTime? @map("otp_expires") @db.Timestamptz(6)
+  resetToken    String?   @map("reset_token") @db.VarChar(64)
+  resetExpires  DateTime? @map("reset_expires") @db.Timestamptz(6)
+  createdDate   DateTime  @default(now()) @map("created_date") @db.Timestamptz(6)
+
+  @@map("User")
+}
+
+model TmsEmployee {
+  id        String   @id @db.VarChar(64)
+  name      String   @db.VarChar(200)
+  notes     String?  @db.Text
+  remarks   String?  @db.Text
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsEmployee")
+}
+
+model TmsTask {
+  id        String   @id @db.VarChar(64)
+  name      String   @db.VarChar(300)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsTask")
+}
+
+model TmsAssignment {
+  id         String   @id @db.VarChar(64)
+  employeeId String   @map("employee_id") @db.VarChar(64)
+  taskId     String   @map("task_id") @db.VarChar(64)
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsAssignment")
+}
+
+model TmsShiftDefinition {
+  id        String   @id @db.VarChar(64)
+  name      String   @db.VarChar(200)
+  startHhmm String   @map("start_hhmm") @db.VarChar(5)
+  endHhmm   String   @map("end_hhmm") @db.VarChar(5)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsShiftDefinition")
+}
+
+model TmsShiftRecord {
+  id               String    @id @db.VarChar(64)
+  employeeId       String    @map("employee_id") @db.VarChar(64)
+  date             String    @db.VarChar(10)
+  shiftTime        String?   @map("shift_time") @db.VarChar(200)
+  timeInYard       DateTime? @map("time_in_yard") @db.Timestamptz(6)
+  timeOutYard      DateTime? @map("time_out_yard") @db.Timestamptz(6)
+  attendanceStatus String?   @map("attendance_status") @db.VarChar(50)
+  reason           String?   @db.VarChar(1000)
+  notes            String?   @db.Text
+  remarks          String?   @db.Text
+  updatedAt        DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsShiftRecord")
+}
+
+model TmsTaskEntry {
+  id              String    @id @db.VarChar(64)
+  employeeId      String    @map("employee_id") @db.VarChar(64)
+  taskId          String    @map("task_id") @db.VarChar(64)
+  date            String    @db.VarChar(10)
+  timeStarted     DateTime? @map("time_started") @db.Timestamptz(6)
+  timeFinished    DateTime? @map("time_finished") @db.Timestamptz(6)
+  totalDurationMs BigInt    @default(0) @map("total_duration_ms")
+  totalPausedMs   BigInt    @default(0) @map("total_paused_ms")
+  status          String    @default("stopped") @db.VarChar(20)
+  triggeringLevel String?   @map("triggering_level") @db.VarChar(10)
+  updatedAt       DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsTaskEntry")
+}
+
+model TmsPauseEvent {
+  id          String    @id @db.VarChar(64)
+  taskEntryId String    @map("task_entry_id") @db.VarChar(64)
+  timePaused  DateTime? @map("time_paused") @db.Timestamptz(6)
+  timeResumed DateTime? @map("time_resumed") @db.Timestamptz(6)
+  intervalMs  BigInt?   @map("interval_ms")
+
+  @@map("TmsPauseEvent")
+}
+
+model TmsBreakRecord {
+  id           String    @id @db.VarChar(64)
+  employeeId   String    @map("employee_id") @db.VarChar(64)
+  date         String    @db.VarChar(10)
+  timeStarted  DateTime? @map("time_started") @db.Timestamptz(6)
+  timeFinished DateTime? @map("time_finished") @db.Timestamptz(6)
+  durationMs   BigInt?   @map("duration_ms")
+  status       String?   @db.VarChar(20)
+  updatedAt    DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("TmsBreakRecord")
+}
+
+model TmsSnapshot {
+  id         Int      @id @default(autoincrement())
+  savedAt    DateTime @default(now()) @map("saved_at") @db.Timestamptz(6)
+  savedBy    String?  @map("saved_by") @db.VarChar(320)
+  entryCount Int      @default(0) @map("entry_count")
+
+  @@map("TmsSnapshot")
+}
